@@ -1,0 +1,13 @@
+# Showcase this worker on https://openrelik.org/marketplace
+publish: true
+
+# Worker Metadata. This section is required.
+display_name: RECmd Worker
+description: Runs Eric Zimmerman's RECmd application on Registry Hives in filetree consistent archives (like KAPE .zip images) using the DFIR Batch files
+
+
+# Optional: Third-Party Tools Used by the Worker.
+tools:
+  - display_name: RECmd
+    description: Powerful command line Registry tool searching, multi-hive support, plugins, and more
+    url: https://github.com/EricZimmerman/RECmd # URL for more info about the tool
