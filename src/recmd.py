@@ -13,6 +13,7 @@ from openrelik_worker_common.archive_utils import extract_archive
 from openrelik_worker_common.file_utils import create_output_file
 from openrelik_worker_common.task_utils import create_task_result, get_input_files
 
+import yaml
 from pathvalidate import sanitize_filename
 
 from .app import celery
@@ -82,7 +83,7 @@ def recmd(
         )
         try:
             (command_string, export_directory) = extract_archive(
-                config_item, output_path, log_file.path, ["*.openrelik-hostname"], archive_password
+                config_item, output_path, log_file.path, ["*.openrelik-config"], archive_password
             )
         except Exception as e:
             logger.error(f"extract_archive on openrelik-config.zip failed: {e}")
@@ -97,14 +98,32 @@ def recmd(
         extracted_files = [
             file for file in export_directory_path.glob("**/*") if file.is_file()
         ]
-        if (hostname_item := next((f for f in extracted_files if f.name == ".openrelik-hostname"), None)):
-            with open(hostname_item.absolute(),"r", encoding="utf-8") as f:
-                raw_hostname = f.read().strip()
-            prefix = f"{sanitize_filename(raw_hostname)}_"
-        else:
-            logger.info(f"No .openrelik-hostname file found in openrelik-config.zip")
-        # clean up export directory
-        shutil.rmtree(export_directory)
+        config_item = next((f for f in extracted_files if f.name == ".openrelik-config"), None)
+        if config_item:
+            try:
+                with open(config_item.absolute(), "r", encoding="utf-8") as f:
+                    config_data = yaml.safe_load(f)
+
+                if isinstance(config_data, dict) and "hostname" in config_data:
+                    raw_hostname = str(config_data["hostname"]).strip()
+                    prefix = f"{sanitize_filename(raw_hostname)}_"
+                else:
+                    logger.info("No 'hostname' key found in .openrelik-config file.")
+
+            except yaml.YAMLError:
+                logger.error(".openrelik-config is not a valid YAML file.")
+            except Exception as e:
+                logger.error(f"Error reading .openrelik-config: {e}")
+                    # Pass through .openrelik-config as an output
+            config_passthrough_file = create_output_file(
+                output_path,
+                display_name=config_item.name,
+                data_type="openrelik:openrelik-config:openrelik-config",
+            )
+            # link file to location of new output_file
+            os.link(config_item.absolute(), config_passthrough_file.path)
+            # output our file
+            output_files.append(config_passthrough_file.to_dict())
 
     # Extract zip images and run RECmd
     non_config_files = [f for f in input_files if f.get('display_name') != "openrelik-config.zip"]

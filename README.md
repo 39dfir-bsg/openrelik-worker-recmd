@@ -8,9 +8,9 @@ This is not the optimal solution, but it works!
 
 For more info on DFIR Batch files https://github.com/EricZimmerman/RECmd/blob/master/BatchExamples/DFIRBatch.md
 
-Supports `.openrelik-hostname` files provided as part of a `openrelik-config.zip`.
+Supports a `.openrelik-config` YAML file provided as part of a `openrelik-config.zip`, as well as passthrough (so the config is passed to later workflows).
 
-Supply a `.openrelik-hostname` file in an `openrelik-config.zip` archive to this worker and it will prefix any output with the included hostname.
+Supply a `.openrelik-config` YAML file in an `openrelik-config.zip` archive to this worker and it will prefix any output with the included `hostname:` vakye.
 
 ## Deploy
 Update your `config.env` file to set `OPENRELIK_WORKER_RECMD_VERSION` to the tagged release version you want to use.
