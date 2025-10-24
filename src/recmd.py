@@ -109,8 +109,8 @@ def recmd(
     # Extract zip images and run RECmd
     non_config_files = [f for f in input_files if f.get('display_name') != "openrelik-config.zip"]
     if len(non_config_files) != 1:
-        logger.error(f"more than one file provided to extract (ignoring any openrelik-config.zip files)")
-        raise
+        logger.error(f"more than one zip file provided to extract (ignoring any openrelik-config.zip files)")
+        raise ValueError("Expected exactly one non-config ZIP file to extract")
     
     for input_file in non_config_files:
         log_root.bind(input_file=input_file)
